@@ -1,5 +1,19 @@
-# itsmycrib
+# itsaren
 
-`curl -i -XPOST -H"Content-Type:application/json" -d'{"address":"56th street","phone":"0712345678"}' localhost:8080/crib`
+Run:
 
-`curl -i -H"Accept:application/json" localhost:8080/crib/ce4d5d4b-8646-4804-9601-8464c64f8cf6`
+`sbt docker:publishLocal`
+
+`docker run -it -p 8080 itsmycrib:1.0.0-SNAPSHOT`
+
+Use:
+
+1. `curl -i -XPOST -H"Content-Type:application/json" -d'{"address":"56th street","phone":"0712345678"}' localhost:8080/cribs`
+
+2. `curl -i -H"Accept:application/json" localhost:8080/cribs/f0e30a8b-e4f2-41b1-9511-3fc1e80a02f7`
+
+3. `curl -i -XPUT -H"Content-Type:application/json" -d'{"address":"12th street","phone":"0712345699"}' localhost:8080/cribs/f2dcacea-7ba2-4763-a79d-48f835ee5523`
+
+4. `curl -i -XDELETE localhost:8080/cribs/f2dcacea-7ba2-4763-a79d-48f835ee5523`
+
+5. `curl -i localhost:8080/cribs`
