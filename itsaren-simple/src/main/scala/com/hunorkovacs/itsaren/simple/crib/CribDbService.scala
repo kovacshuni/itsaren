@@ -1,4 +1,4 @@
-package com.hunorkovacs.itsaren
+package com.hunorkovacs.itsaren.simple.crib
 
 import scala.collection.mutable
 

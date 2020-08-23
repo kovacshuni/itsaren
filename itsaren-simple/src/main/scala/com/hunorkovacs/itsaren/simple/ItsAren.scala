@@ -1,14 +1,15 @@
-package com.hunorkovacs.itsaren
+package com.hunorkovacs.itsaren.simple
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.Materializer
+import com.hunorkovacs.itsaren.simple.crib.CribDbService
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
-import scala.concurrent.duration._
+import scala.concurrent.duration.DurationInt
 
-object ItsMyCrib extends App {
+object ItsAren extends App {
 
   private val logger                     = LoggerFactory.getLogger(getClass)
   implicit private val sys: ActorSystem  = ActorSystem("itsmycrib")

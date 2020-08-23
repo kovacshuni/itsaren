@@ -17,7 +17,6 @@ object BuildConfig {
       "-deprecation",
       "-feature",
       "-Ywarn-unused-import"
-    ),
-    javaOptions in run += "-XX:+CMSClassUnloadingEnabled"
+    )
   )
 }
