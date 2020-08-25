@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.headers.HttpOriginRange.*
 import akka.http.scaladsl.model.headers.{`Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Origin`}
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, ResponseEntity}
 import akka.http.scaladsl.server._
-import com.hunorkovacs.itsaren.simple.crib.{CribDbService, CribPost}
+import com.hunorkovacs.itsaren.simple.crib.{Crib, CribDbService, CribPost}
 import com.hunorkovacs.itsaren.simple.message.Message
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe._
@@ -16,6 +16,14 @@ import io.circe.generic.auto._
 import scala.collection.immutable.Seq
 
 class Router(private val cribDbService: CribDbService) extends Directives with FailFastCirceSupport {
+
+  import freestyle.free._
+  import freestyle.free.implicits._
+  import _root_.akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
+  import cats.Id
+
+  implicit val userMarshaller: ToEntityMarshaller[Crib] =
+    Marshaller.StringMarshaller.compose((crib: Crib) => s"Crib(${crib.id})")
 
   implicit private def outJson[T: Encoder](t: T): ResponseEntity =
     HttpEntity(`application/json`, Encoder[T].apply(t).spaces2)

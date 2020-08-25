@@ -12,7 +12,10 @@ object Dependencies {
   private val circeCore     = "io.circe"          %% "circe-core"      % CirceVersion
   private val circeGeneric  = "io.circe"          %% "circe-generic"   % CirceVersion
   private val circeParser   = "io.circe"          %% "circe-parser"    % CirceVersion
-  private val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.34.0"// exclude ("com.typesafe.akka", "akka-http_2.12")
+  private val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.34.0" // needs to match with akka-http
+  private val freestyleAkka = "io.frees"          %% "frees-akka"      % "0.8.2"
+  private val slf4j         = "org.slf4j"          % "slf4j-api"       % "1.7.30"
+  private val logback       = "ch.qos.logback"     % "logback-classic" % "1.2.3"
 
   val Simple = Seq(
     akkaActor,
@@ -22,7 +25,8 @@ object Dependencies {
     circeGeneric,
     circeParser,
     akkaHttpCirce,
-    "org.slf4j"      % "slf4j-api"       % "1.7.30",
-    "ch.qos.logback" % "logback-classic" % "1.2.3"
+    freestyleAkka,
+    slf4j,
+    logback
   )
 }
