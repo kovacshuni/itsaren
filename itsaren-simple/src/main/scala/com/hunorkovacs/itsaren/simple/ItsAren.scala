@@ -3,7 +3,7 @@ package com.hunorkovacs.itsaren.simple
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.stream.Materializer
-import com.hunorkovacs.itsaren.simple.crib.CribDbService
+import com.hunorkovacs.itsaren.simple.crib.InMemCribDbService
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Await
@@ -16,7 +16,7 @@ object ItsAren extends App {
   implicit private val mat: Materializer = Materializer(sys)
   import sys.dispatcher
 
-  private val cribDbService = new CribDbService()
+  private val cribDbService = new InMemCribDbService()
   private val router        = new Router(cribDbService)
 
   private val httpBindingF = Http().newServerAt("0.0.0.0", 8080).bindFlow(router.route)

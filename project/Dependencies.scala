@@ -2,10 +2,12 @@ import sbt._
 
 object Dependencies {
 
+  private val CatsVersion     = "2.1.4"
   private val AkkaVersion     = "2.6.8"
   private val AkkaHttpVersion = "10.2.0"
   private val CirceVersion    = "0.12.3"
 
+  private val catsEffect    = "org.typelevel"     %% "cats-effect"     % CatsVersion
   private val akkaActor     = "com.typesafe.akka" %% "akka-actor"      % AkkaVersion
   private val akkaStream    = "com.typesafe.akka" %% "akka-stream"     % AkkaVersion
   private val akkaHttpCore  = "com.typesafe.akka" %% "akka-http-core"  % AkkaHttpVersion
@@ -18,6 +20,7 @@ object Dependencies {
   private val logback       = "ch.qos.logback"     % "logback-classic" % "1.2.3"
 
   val Simple = Seq(
+    catsEffect,
     akkaActor,
     akkaStream,
     akkaHttpCore,
