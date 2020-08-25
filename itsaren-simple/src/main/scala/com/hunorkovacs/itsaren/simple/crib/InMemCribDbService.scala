@@ -1,5 +1,6 @@
 package com.hunorkovacs.itsaren.simple.crib
 
+import cats.effect.IO
 import com.hunorkovacs.itsaren.simple.crib.Crib.CribNoId
 
 import scala.collection.mutable
@@ -20,7 +21,7 @@ class InMemCribDbService extends CribDbService {
 
   override def retrieve(id: String): Option[Crib] = cribs.get(id)
 
-  override def retrieveAll: Iterable[Crib] = cribs.values
+  override def retrieveAll: IO[Iterable[Crib]] = IO.pure(cribs.values)
 
   override def update(id: String, cribPost: CribNoId): Option[Crib] = {
     cribs.get(id) map { crib =>

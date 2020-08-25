@@ -1,13 +1,13 @@
 package com.hunorkovacs.itsaren.simple
 
-import akka.actor.ActorSystem
+import akka.Done
+import akka.actor.{ActorSystem, CoordinatedShutdown}
 import akka.http.scaladsl.Http
 import akka.stream.Materializer
 import com.hunorkovacs.itsaren.simple.crib.InMemCribDbService
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
+import scala.concurrent.Future
 
 object ItsAren extends App {
 
@@ -22,16 +22,12 @@ object ItsAren extends App {
   private val httpBindingF = Http().newServerAt("0.0.0.0", 8080).bindFlow(router.route)
   logger.info("Server online, accessible on port=8080")
   logger.info("Press Ctrl-C (or send SIGINT) to stop.")
-  scala.sys addShutdownHook shutdown
 
-  private def shutdown() = {
-    logger.info("Exiting...")
-    val term = for {
-      httpBinding <- httpBindingF
-      _           <- httpBinding.unbind
-      _           <- Http().shutdownAllConnectionPools()
-      _           <- sys.terminate()
-    } yield ()
-    Await.ready(term, 5 seconds)
+  CoordinatedShutdown(sys).addCancellableTask(CoordinatedShutdown.PhaseBeforeServiceUnbind, "log-shutdown") { () =>
+    Future {
+      logger.info("Exiting...")
+      Done
+    }
   }
+
 }

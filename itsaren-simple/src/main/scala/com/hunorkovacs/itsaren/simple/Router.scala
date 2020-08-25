@@ -7,26 +7,25 @@ import akka.http.scaladsl.model.headers.HttpOriginRange.*
 import akka.http.scaladsl.model.headers.{`Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Origin`}
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, ResponseEntity}
 import akka.http.scaladsl.server._
-import com.hunorkovacs.itsaren.simple.crib.{Crib, InMemCribDbService, CribNoId}
+import cats.effect.{ContextShift, IO}
+import com.hunorkovacs.itsaren.simple.crib.Crib.CribNoId
+import com.hunorkovacs.itsaren.simple.crib.InMemCribDbService
 import com.hunorkovacs.itsaren.simple.message.Message
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe._
 import io.circe.generic.auto._
+import com.holidaycheck.akka.http.FMarshaller._
+import com.holidaycheck.akka.http.FMarshaller
 
 import scala.collection.immutable.Seq
+import scala.concurrent.ExecutionContext
 
 class Router(private val cribDbService: InMemCribDbService) extends Directives with FailFastCirceSupport {
 
-  import freestyle.free._
-  import freestyle.free.implicits._
-  import _root_.akka.http.scaladsl.marshalling.{ Marshaller, ToEntityMarshaller }
-  import cats.Id
-
-  implicit val userMarshaller: ToEntityMarshaller[Crib] =
-    Marshaller.StringMarshaller.compose((crib: Crib) => s"Crib(${crib.id})")
-
   implicit private def outJson[T: Encoder](t: T): ResponseEntity =
     HttpEntity(`application/json`, Encoder[T].apply(t).spaces2)
+
+  implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
   val route: Route =
     respondWithDefaultHeaders(
@@ -38,7 +37,8 @@ class Router(private val cribDbService: InMemCribDbService) extends Directives w
         path("cribs") {
           get {
             complete {
-              cribDbService.retrieveAll
+              val cribs = cribDbService.retrieveAll
+              cribs
             }
           } ~
             post {

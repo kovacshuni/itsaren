@@ -15,7 +15,9 @@ object Dependencies {
   private val circeGeneric  = "io.circe"          %% "circe-generic"   % CirceVersion
   private val circeParser   = "io.circe"          %% "circe-parser"    % CirceVersion
   private val akkaHttpCirce = "de.heikoseeberger" %% "akka-http-circe" % "1.34.0" // needs to match with akka-http
-  private val freestyleAkka = "io.frees"          %% "frees-akka"      % "0.8.2"
+
+  private val easyAkkaMarshalling = "com.holidaycheck" %% "easy-akka-marshalling" % "1.0.0"
+
   private val slf4j         = "org.slf4j"          % "slf4j-api"       % "1.7.30"
   private val logback       = "ch.qos.logback"     % "logback-classic" % "1.2.3"
 
@@ -28,7 +30,7 @@ object Dependencies {
     circeGeneric,
     circeParser,
     akkaHttpCirce,
-    freestyleAkka,
+    easyAkkaMarshalling,
     slf4j,
     logback
   )
