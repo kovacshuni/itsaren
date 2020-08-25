@@ -12,18 +12,18 @@ class InMemCribDbService extends CribDbService {
     ("24495031-ce2e-42a4-b500-4497502c0100", Crib("24495031-ce2e-42a4-b500-4497502c0100", "40th street", "0712345678"))
   )
 
-  override def create(cribPost: CribNoId): Crib = {
+  override def create(cribPost: CribNoId): IO[Crib] = IO.pure{
     val id = java.util.UUID.randomUUID.toString
     val crib = Crib(id, cribPost.address, cribPost.phone)
     cribs.+=((id, crib))
     crib
   }
 
-  override def retrieve(id: String): Option[Crib] = cribs.get(id)
+  override def retrieve(id: String): IO[Option[Crib]] = IO.pure(cribs.get(id))
 
   override def retrieveAll: IO[Iterable[Crib]] = IO.pure(cribs.values)
 
-  override def update(id: String, cribPost: CribNoId): Option[Crib] = {
+  override def update(id: String, cribPost: CribNoId): IO[Option[Crib]] = IO.pure{
     cribs.get(id) map { crib =>
       val updatedCrib = Crib(crib.id, cribPost.address, cribPost.phone)
       cribs.put(crib.id, updatedCrib)
@@ -31,6 +31,6 @@ class InMemCribDbService extends CribDbService {
     }
   }
 
-  override def delete(id: String): Option[Crib] = cribs.remove(id)
+  override def delete(id: String): IO[Option[Crib]] = IO.pure(cribs.remove(id))
 
 }

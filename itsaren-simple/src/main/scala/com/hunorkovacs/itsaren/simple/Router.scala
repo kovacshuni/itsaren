@@ -15,7 +15,6 @@ import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe._
 import io.circe.generic.auto._
 import com.holidaycheck.akka.http.FMarshaller._
-import com.holidaycheck.akka.http.FMarshaller
 
 import scala.collection.immutable.Seq
 import scala.concurrent.ExecutionContext
@@ -44,7 +43,9 @@ class Router(private val cribDbService: InMemCribDbService) extends Directives w
             post {
               entity(as[CribNoId]) { cribPost =>
                 complete {
-                  HttpResponse(status = Created, entity = cribDbService.create(cribPost))
+                  cribDbService
+                    .create(cribPost)
+                    .map(created => HttpResponse(status = Created, entity = created))
                 }
               }
             } ~
@@ -59,16 +60,16 @@ class Router(private val cribDbService: InMemCribDbService) extends Directives w
           path("cribs" / Remaining) { id =>
             get {
               complete {
-                cribDbService.retrieve(id) match {
-                  case Some(c) => c
-                  case None    => HttpResponse(status = NotFound, entity = Message("Crib not found."))
+                cribDbService.retrieve(id).map {
+                  case Some(retrieved) => HttpResponse(status = Created, entity = retrieved)
+                  case None            => HttpResponse(status = NotFound, entity = Message("Crib not found."))
                 }
               }
             } ~
               put {
                 entity(as[CribNoId]) { cribPost =>
                   complete {
-                    cribDbService.update(id, cribPost) match {
+                    cribDbService.update(id, cribPost).map {
                       case Some(updatedCrib) => HttpResponse(status = Created, entity = updatedCrib)
                       case None              => HttpResponse(status = NotFound, entity = Message("Crib not found, can't update."))
                     }
@@ -77,8 +78,8 @@ class Router(private val cribDbService: InMemCribDbService) extends Directives w
               } ~
               delete {
                 complete {
-                  cribDbService.delete(id) match {
-                    case Some(_) => NoContent
+                  cribDbService.delete(id).map {
+                    case Some(_) => HttpResponse(status = NoContent)
                     case None    => HttpResponse(status = NotFound, entity = Message("Crib not found, can't delete."))
                   }
                 }
