@@ -1,112 +1,54 @@
 package com.hunorkovacs.itsaren.simple
 
-import akka.http.scaladsl.model.ContentTypes.`application/json`
-import akka.http.scaladsl.model.HttpMethods._
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.headers.HttpOriginRange.*
-import akka.http.scaladsl.model.headers.{`Access-Control-Allow-Headers`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Origin`}
-import akka.http.scaladsl.model.{HttpEntity, HttpResponse, ResponseEntity}
-import akka.http.scaladsl.server._
-import cats.effect.{ContextShift, IO}
-import com.hunorkovacs.itsaren.simple.crib.Crib.CribNoId
-import com.hunorkovacs.itsaren.simple.crib.InMemCribDbService
+import cats.data.Kleisli
+import cats.effect.IO
+import com.hunorkovacs.itsaren.simple.crib.{CribDbService, CribNoId}
 import com.hunorkovacs.itsaren.simple.message.Message
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
-import io.circe._
 import io.circe.generic.auto._
-import com.holidaycheck.akka.http.FMarshaller._
+import org.http4s.circe.CirceEntityEncoder._
+import org.http4s.circe._
+import org.http4s.dsl.io._
+import org.http4s.implicits._
+import org.http4s.{EntityDecoder, HttpRoutes, Request, Response}
 
-import scala.collection.immutable.Seq
-import scala.concurrent.ExecutionContext
+object Router {
 
-class Router(private val cribDbService: InMemCribDbService) extends Directives with FailFastCirceSupport {
+  def http4sRoutes(cribDbService: CribDbService): Kleisli[IO, Request[IO], Response[IO]] =
+    HttpRoutes
+      .of[IO] {
+        case GET -> Root / "cribs"            =>
+          cribDbService.retrieveAll.flatMap(Ok(_))
 
-  implicit private def outJson[T: Encoder](t: T): ResponseEntity =
-    HttpEntity(`application/json`, Encoder[T].apply(t).spaces2)
+        case GET -> Root / "cribs" / id       =>
+          cribDbService.retrieve(id).flatMap {
+            case None       => NotFound()
+            case Some(crib) => Ok(crib)
+          }
 
-  implicit val contextShift: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+        case req @ POST -> Root / "cribs"     =>
+          for {
+            cribNoId <- req.as[CribNoId]
+            crib     <- cribDbService.create(cribNoId)
+            resp     <- Ok(crib)
+          } yield resp
 
-  val route: Route =
-    respondWithDefaultHeaders(
-      Seq(
-        `Access-Control-Allow-Origin`(*)
-      )
-    ) {
-      handleRejections(myRejectionHandler) {
-        path("cribs") {
-          get {
-            complete {
-              val cribs = cribDbService.retrieveAll
-              cribs
-            }
-          } ~
-            post {
-              entity(as[CribNoId]) { cribPost =>
-                complete {
-                  cribDbService
-                    .create(cribPost)
-                    .map(created => HttpResponse(status = Created, entity = created))
-                }
-              }
-            } ~
-            options {
-              respondWithDefaultHeaders(
-                Seq(`Access-Control-Allow-Methods`(Seq(GET, OPTIONS, POST)), `Access-Control-Allow-Headers`(Seq("Content-Type")))
-              ) {
-                complete(OK)
-              }
-            }
-        } ~
-          path("cribs" / Remaining) { id =>
-            get {
-              complete {
-                cribDbService.retrieve(id).map {
-                  case Some(retrieved) => HttpResponse(status = Created, entity = retrieved)
-                  case None            => HttpResponse(status = NotFound, entity = Message("Crib not found."))
-                }
-              }
-            } ~
-              put {
-                entity(as[CribNoId]) { cribPost =>
-                  complete {
-                    cribDbService.update(id, cribPost).map {
-                      case Some(updatedCrib) => HttpResponse(status = Created, entity = updatedCrib)
-                      case None              => HttpResponse(status = NotFound, entity = Message("Crib not found, can't update."))
-                    }
-                  }
-                }
-              } ~
-              delete {
-                complete {
-                  cribDbService.delete(id).map {
-                    case Some(_) => HttpResponse(status = NoContent)
-                    case None    => HttpResponse(status = NotFound, entity = Message("Crib not found, can't delete."))
-                  }
-                }
-              } ~
-              options {
-                respondWithDefaultHeaders(
-                  Seq(`Access-Control-Allow-Methods`(Seq(GET, DELETE, OPTIONS, PUT)), `Access-Control-Allow-Headers`(Seq("Content-Type")))
-                ) {
-                  complete(OK)
-                }
-              }
+        case req @ PUT -> Root / "cribs" / id =>
+          for {
+            cribNoId <- req.as[CribNoId]
+            crib     <- cribDbService.update(id, cribNoId)
+            resp     <- crib match {
+                          case Some(updatedCrib) => Ok(updatedCrib)
+                          case None              => NotFound(Message("Crib not found, can't update."))
+                        }
+          } yield resp
+
+        case DELETE -> Root / "cribs" / id    =>
+          cribDbService.delete(id).flatMap {
+            case None    => NotFound(Message("Crib not found, can't delete."))
+            case Some(_) => NoContent()
           }
       }
-    }
+      .orNotFound
 
-  private def myRejectionHandler =
-    RejectionHandler
-      .newBuilder()
-      .handleAll[MethodRejection] { methodRejections =>
-        val names = methodRejections.map(_.supported.name)
-        complete(HttpResponse(status = MethodNotAllowed, entity = Message(s"Can't do that! Supported: ${names mkString " or "}!")))
-      }
-      .handleNotFound {
-        complete(HttpResponse(status = NotFound, entity = Message("Not here!")))
-      }
-      .handle {
-        case r: MalformedRequestContentRejection => complete(HttpResponse(status = BadRequest, entity = Message(r.message)))
-      }
-      .result()
+  implicit val cribNoIdDecoder: EntityDecoder[IO, CribNoId] = jsonOf[IO, CribNoId]
 }

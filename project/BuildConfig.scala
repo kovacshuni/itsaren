@@ -16,7 +16,8 @@ object BuildConfig {
       "-unchecked",
       "-deprecation",
       "-feature",
-      "-Ywarn-unused-import"
+      "-Ywarn-unused-import",
+      "-Ypartial-unification" // required by http4s on scala 2.12, but why is it compiling to 2.12??
     )
   )
 }

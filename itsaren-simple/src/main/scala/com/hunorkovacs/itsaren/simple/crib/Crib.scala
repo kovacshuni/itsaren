@@ -1,9 +1,10 @@
 package com.hunorkovacs.itsaren.simple.crib
 
+import io.circe.Encoder
+import io.circe.generic.semiauto.deriveEncoder
+
 case class Crib(id: String, address: String, phone: String)
 
 object Crib {
-
-  case class CribNoId(address: String, phone: String)
-
+  implicit val cribEncoder: Encoder[Crib] = deriveEncoder
 }
