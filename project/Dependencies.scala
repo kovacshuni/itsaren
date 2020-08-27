@@ -13,6 +13,7 @@ object Dependencies {
     "io.circe"      %% "circe-core"          % CirceVersion,
     "io.circe"      %% "circe-generic"       % CirceVersion,
     "io.circe"      %% "circe-parser"        % CirceVersion,
+    "io.circe"      %% "circe-config"        % "0.8.0",
     "org.http4s"    %% "http4s-dsl"          % Http4sVersion,
     "org.http4s"    %% "http4s-blaze-server" % Http4sVersion,
     "org.http4s"    %% "http4s-circe"        % Http4sVersion,
