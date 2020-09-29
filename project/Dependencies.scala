@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
 
   private val CatsVersion   = "2.1.4"
-  private val Http4sVersion = "0.21.7"
+  private val Http4sVersion = "1.0.0-M4"
   private val CirceVersion  = "0.12.3"
 
   val ItsarenSimple = Seq(

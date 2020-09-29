@@ -1,14 +1,11 @@
 package com.hunorkovacs.itsaren.simple.crib.persistence
 
-import com.hunorkovacs.itsaren.simple.configuration.DbConfig
-import com.hunorkovacs.itsaren.simple.crib.crib.{CribPersistence, Persistence}
-import com.hunorkovacs.itsaren.simple.crib.{Crib, CribNoId}
-import zio.blocking.Blocking
-import zio.{Has, Managed, Task, ZLayer}
-
+import com.hunorkovacs.itsaren.simple.crib.Crib
+import com.hunorkovacs.itsaren.simple.crib.CribNoId
+import zio.Task
 import scala.collection.mutable
 
-class CribPersistenceService() extends Persistence.Service[Crib] {
+class CribPersistenceLiveService extends CribPersistence.Service {
 
   private val cribs = mutable.Map[String, Crib](
     ("af32635c-35c8-4b90-a012-b7576b8ba4c9", Crib("af32635c-35c8-4b90-a012-b7576b8ba4c9", "56th street", "0712345678")),
@@ -40,11 +37,10 @@ class CribPersistenceService() extends Persistence.Service[Crib] {
 
 }
 
-object CribPersistenceService {
+trait CribPersistenceLive extends CribPersistence {
 
-  val live: ZLayer[Has[DbConfig] with Blocking, Throwable, CribPersistence] =
-    ZLayer.fromManaged(
-      Managed.fromEffect(Task(new CribPersistenceService()))
-    )
+  override def cribPersistence: CribPersistence.Service = new CribPersistenceLiveService
 
 }
+
+object CribPersistenceLive extends CribPersistenceLive

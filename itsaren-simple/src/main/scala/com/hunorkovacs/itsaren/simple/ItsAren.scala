@@ -1,35 +1,47 @@
 package com.hunorkovacs.itsaren.simple
 
-import cats.effect.{ExitCode, IO, IOApp}
-import com.hunorkovacs.itsaren.simple.configuration.Configuration
-import com.hunorkovacs.itsaren.simple.crib.InMemCribDbService
-import org.http4s.server.blaze._
+import zio._
+import zio.console._
+import zio.interop.catz._
+import zio.interop.catz.implicits._
+import org.http4s._
+import org.http4s.dsl.Http4sDsl
+import org.http4s.implicits._
+import org.http4s.server.blaze.BlazeServerBuilder
+
 import org.slf4j.LoggerFactory
-import zio.{Has, ZIO}
+import org.slf4j.Logger
 
-import scala.concurrent.ExecutionContext.Implicits.global
+object ItsAren extends App {
 
-object ItsAren extends IOApp {
+  private val dsl = Http4sDsl[Task]
+  import dsl._
 
-  def run(args: List[String]): IO[ExitCode] = {
+  private val helloWorldService = HttpRoutes
+    .of[Task] {
+      case GET -> Root / "hello" => Ok("Hi Joe")
+    }
+    .orNotFound
 
-    val database: ZIO[Configuration, Throwable, DB] = ???
-    val databas2: ZIO[Has[Configuration.Service], Throwable, DB] = ???
-
-    val httpServer = BlazeServerBuilder[IO](global)
-      .bindHttp(8080, "localhost")
-      .withHttpApp(Router.http4sRoutes(InMemCribDbService))
-      .resource
-
-    httpServer
-      .use { _ =>
-        for {
-          logger <- IO(LoggerFactory.getLogger(ItsAren.getClass))
-          _      <- IO(logger.info("Server online, accessible on port=8080 Press Ctrl-C (or send SIGINT) to stop"))
-          never  <- IO.never
-        } yield never
+  def run(args: List[String]): zio.URIO[zio.ZEnv, ExitCode] =
+    ZIO
+      .runtime[ZEnv]
+      .flatMap { implicit runtime =>
+        (for {
+          server <- BlazeServerBuilder[Task](runtime.platform.executor.asEC)
+                      .bindHttp(8080, "localhost")
+                      .withHttpApp(helloWorldService)
+                      .resource
+                      .toManagedZIO
+          logger <- Managed.succeed(LoggerFactory.getLogger(ItsAren.getClass))
+        } yield (server, logger))
+          .use {
+            case (_, logger: Logger) =>
+              ZIO(logger.info("Server online, accessible on port=8080 Press Ctrl-C (or send SIGINT) to stop"))
+                .flatMap(_ => ZIO.never)
+          }
+          .as(ExitCode.success)
+          .catchAllCause(err => putStrLn(err.prettyPrint).as(ExitCode.failure))
       }
-      .as(ExitCode.Success)
-  }
 
 }
