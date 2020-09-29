@@ -23,6 +23,8 @@ object ItsAren extends App {
     }
     .orNotFound
 
+  private def f(c: Console): Logger = LoggerFactory.getLogger(ItsAren.getClass)
+
   def run(args: List[String]): zio.URIO[zio.ZEnv, ExitCode] =
     ZIO
       .runtime[ZEnv]
@@ -33,10 +35,10 @@ object ItsAren extends App {
                       .withHttpApp(helloWorldService)
                       .resource
                       .toManagedZIO
-          logger <- Managed.succeed(LoggerFactory.getLogger(ItsAren.getClass))
+          logger <- ZManaged.fromFunction(f)
         } yield (server, logger))
           .use {
-            case (_, logger: Logger) =>
+            case (_, logger) =>
               ZIO(logger.info("Server online, accessible on port=8080 Press Ctrl-C (or send SIGINT) to stop"))
                 .flatMap(_ => ZIO.never)
           }
