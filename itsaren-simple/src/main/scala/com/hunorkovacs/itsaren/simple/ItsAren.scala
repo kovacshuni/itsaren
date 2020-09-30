@@ -28,22 +28,26 @@ object ItsAren extends App {
   def run(args: List[String]): zio.URIO[zio.ZEnv, ExitCode] =
     ZIO
       .runtime[ZEnv]
-      .flatMap { implicit runtime =>
-        (for {
-          server <- BlazeServerBuilder[Task](runtime.platform.executor.asEC)
-                      .bindHttp(8080, "localhost")
-                      .withHttpApp(helloWorldService)
-                      .resource
-                      .toManagedZIO
-          logger <- ZManaged.fromFunction(f)
-        } yield (server, logger))
-          .use {
-            case (_, logger) =>
-              ZIO(logger.info("Server online, accessible on port=8080 Press Ctrl-C (or send SIGINT) to stop"))
-                .flatMap(_ => ZIO.never)
-          }
-          .as(ExitCode.success)
-          .catchAllCause(err => putStrLn(err.prettyPrint).as(ExitCode.failure))
+      .flatMap(implicit runtime => pr(runtime))
+
+  private def pr(implicit runtime: Runtime[ZEnv]) = {
+    val resources = for {
+      server <- BlazeServerBuilder[Task](runtime.platform.executor.asEC)
+                  .bindHttp(8080, "localhost")
+                  .withHttpApp(helloWorldService)
+                  .resource
+                  .toManagedZIO
+      logger <- ZManaged.fromFunction(f)
+    } yield (server, logger)
+
+    resources
+      .use {
+        case (_, logger) =>
+          ZIO(logger.info("Server online, accessible on port=8080 Press Ctrl-C (or send SIGINT) to stop"))
+            .flatMap(_ => ZIO.never)
       }
+      .as(ExitCode.success)
+      .catchAllCause(err => putStrLn(err.prettyPrint).as(ExitCode.failure))
+  }
 
 }
