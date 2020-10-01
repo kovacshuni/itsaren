@@ -1,5 +1,3 @@
-addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.8.0")
-
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.7.5")
-
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.4.0")
+
+// addSbtPlugin("io.get-coursier" % "sbt-coursier" % "2.0.0-RC3-3")

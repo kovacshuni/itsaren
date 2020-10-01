@@ -1,5 +1,9 @@
 package com.hunorkovacs.itsaren.simple
 
+import cats.data.Kleisli
+import zio.Task
+import org.http4s._
+
 // import cats.data.Kleisli
 // import cats.effect.IO
 // import com.hunorkovacs.itsaren.simple.crib.{CribDbService, CribNoId}
@@ -12,6 +16,14 @@ package com.hunorkovacs.itsaren.simple
 // import org.http4s.{EntityDecoder, HttpRoutes, Request, Response}
 
 object Router {
+
+  trait Service {
+
+    def helloWorldService: Kleisli[Task, Request[Task], Response[Task]]
+
+  }
+
+
 
   // def http4sRoutes(cribDbService: CribDbService): Kleisli[IO, Request[IO], Response[IO]] =
   //   HttpRoutes
@@ -51,4 +63,10 @@ object Router {
   //     .orNotFound
 
   // implicit val cribNoIdDecoder: EntityDecoder[IO, CribNoId] = jsonOf[IO, CribNoId]
+}
+
+trait Router {
+
+  def router: Router.Service
+
 }
