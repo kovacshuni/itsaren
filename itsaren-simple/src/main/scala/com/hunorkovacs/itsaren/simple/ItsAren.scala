@@ -28,7 +28,7 @@ object ItsAren extends App {
           .as(ExitCode.success)
           .catchAll(_ => ZIO.succeed(ExitCode.failure))
 
-        used.provide(RouterLiveObj)
+        used.provide(RouterLive)
       }
   }
 }

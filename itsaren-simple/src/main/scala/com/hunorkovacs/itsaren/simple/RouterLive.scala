@@ -26,7 +26,7 @@ trait RouterLive extends Router {
 
 }
 
-object RouterLiveObj extends RouterLive {
+object RouterLive extends RouterLive {
 
   def apply: Router = new RouterLive {}
 }
