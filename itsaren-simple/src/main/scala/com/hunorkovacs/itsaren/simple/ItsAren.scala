@@ -18,15 +18,13 @@ object ItsAren extends App {
       _         <- Logging.info(s"user=$user inserted, bye")
     } yield ()
 
-    val horizontal: ZLayer[Console, Nothing, Logging with UserRepo with Random with Clock] =
+    val horizontal: ZLayer[Console, Nothing, Logging with UserRepo] =
       Logging.consoleLogger ++
-        UserRepo.inMemoryRepo ++
-        Random.live ++
-        Clock.live
+        UserRepo.inMemoryRepo
 
-    val fullLayer: Layer[Nothing, Logging with UserRepo with Random with Clock] = Console.live >>> horizontal
+    val fullLayer: Layer[Nothing, Logging with UserRepo] = Console.live >>> horizontal
 
-    val provided = makeUser.provideLayer(fullLayer)
+    val provided: ZIO[ZEnv, DBError, Unit] = makeUser.provideCustomLayer(fullLayer)
 
     provided.exitCode
   }
