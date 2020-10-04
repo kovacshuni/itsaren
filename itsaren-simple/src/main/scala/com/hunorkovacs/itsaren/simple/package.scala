@@ -8,4 +8,6 @@ package object simple {
 
   type UserRepo = Has[UserRepo.Service]
 
+  type HttpServer = Has[HttpServer.Service]
+
 }

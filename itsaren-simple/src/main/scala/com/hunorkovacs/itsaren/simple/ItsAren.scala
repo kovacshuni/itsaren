@@ -8,16 +8,17 @@ import com.hunorkovacs.itsaren.simple.UserRepo.DBError
 
 object ItsAren extends App {
 
-  trait Connection {
-    def close: UIO[Unit]
-  }
-
-  def makeConnection: UIO[Connection] =
-    UIO(new Connection {
-      def close = UIO(())
-    })
-
   def run(args: List[String]): URIO[ZEnv, ExitCode] = {
+
+    val server = HttpServer.http4Server
+
+    val k = server.useForever
+          .foldCauseM(
+            err => putStrLn(err.prettyPrint).as(ExitCode.failure),
+            _ => ZIO.succeed(ExitCode.success)
+          )
+
+
     val makeUser: ZIO[Logging with UserRepo with Random with Clock, DBError, Unit] = for {
       userId    <- zio.random.nextLong.map(UserId.apply)
       createdAt <- zio.clock.currentDateTime.orDie
@@ -29,26 +30,16 @@ object ItsAren extends App {
       _         <- Logging.info(s"user=$retrUser retrieved to be verified it is the saved one, bye")
     } yield ()
 
-    val connectionLayer: Layer[Nothing, Has[Connection]] =
-      ZLayer.fromAcquireRelease(makeConnection)(c => c.close)
 
-    val postgresLayer: ZLayer[Has[Connection], Nothing, UserRepo] =
-      ZLayer.fromFunction { hasC =>
-        new UserRepo.Service {
-          override def getUser(userId: UserId): IO[DBError, Option[User]] = UIO(Option(User(UserId(123), "Mike")))
-          override def createUser(user: User): IO[DBError, Unit]          = UIO(())
-        }
-      }
-
-    val horizontal: ZLayer[Console with Has[Connection], Nothing, Logging with UserRepo] =
-      Logging.consoleLogger ++
-        postgresLayer
+    // val horizontal: ZLayer[Console with Has[Connection], Nothing, Logging with UserRepo] =
+    //   Logging.consoleLogger ++
+    //     postgresLayer
 
     // UserRepo.inMemoryRepo
 
-    val fullLayer: Layer[Nothing, Logging with UserRepo] = (connectionLayer ++ Console.live) >>> horizontal
+    // val fullLayer: Layer[Nothing, Logging with UserRepo] = (connectionLayer ++ Console.live) >>> horizontal
 
-    val provided: ZIO[ZEnv, DBError, Unit] = makeUser.provideCustomLayer(fullLayer)
+    // val provided: ZIO[ZEnv, DBError, Unit] = makeUser.provideCustomLayer(fullLayer)
 
     provided.exitCode
   }
