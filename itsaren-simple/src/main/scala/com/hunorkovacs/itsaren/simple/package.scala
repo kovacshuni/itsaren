@@ -1,13 +1,12 @@
 package com.hunorkovacs.itsaren
 
-import zio.Has
+import zio._
+import org.http4s.server.Server
 
 package object simple {
 
-  type Logging = Has[Logging.Service]
+  type Http4ServerLayer = Has[ZManaged[Runtime[ZEnv], Throwable, Server]]
 
-  type UserRepo = Has[UserRepo.Service]
-
-  type HttpServer = Has[HttpServer.Service]
+  type RuntimeLayer = Has[Runtime[ZEnv]]
 
 }

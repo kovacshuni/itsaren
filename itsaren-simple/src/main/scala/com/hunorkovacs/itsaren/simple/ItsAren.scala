@@ -4,44 +4,25 @@ import zio._
 import zio.console.Console
 import zio.random.Random
 import zio.clock.Clock
-import com.hunorkovacs.itsaren.simple.UserRepo.DBError
+import org.http4s.server.Server
 
 object ItsAren extends App {
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] = {
 
-    val server = HttpServer.http4Server
+    val toProvide: ZIO[Http4ServerLayer, Nothing, ExitCode] =
+      ZIO
+        .accessM[Http4ServerLayer](_.get.useForever) //compile error
+        .as(ExitCode.success)
+        .catchAll(ZIO.succeed(ExitCode.failure))
 
-    val k = server.useForever
-          .foldCauseM(
-            err => putStrLn(err.prettyPrint).as(ExitCode.failure),
-            _ => ZIO.succeed(ExitCode.success)
-          )
+    val runtimeLayer: ZLayer[Any, Nothing, RuntimeLayer]              = ZLayer.succeed(Runtime.default)
+    val http4Layer: ZLayer[RuntimeLayer, Throwable, Http4ServerLayer] = HttpServer.createHttp4Layer
+    val fullLayer: ZLayer[Any, Throwable, Http4ServerLayer]           = runtimeLayer >>> http4Layer
 
+    val provided = toProvide.provideCustomLayer(fullLayer)
 
-    val makeUser: ZIO[Logging with UserRepo with Random with Clock, DBError, Unit] = for {
-      userId    <- zio.random.nextLong.map(UserId.apply)
-      createdAt <- zio.clock.currentDateTime.orDie
-      user       = User(userId, "Tommy")
-      _         <- Logging.info(s"hi, inserting user")
-      _         <- UserRepo.createUser(user)
-      _         <- Logging.info(s"user=$user inserted")
-      retrUser  <- UserRepo.getUser(userId)
-      _         <- Logging.info(s"user=$retrUser retrieved to be verified it is the saved one, bye")
-    } yield ()
-
-
-    // val horizontal: ZLayer[Console with Has[Connection], Nothing, Logging with UserRepo] =
-    //   Logging.consoleLogger ++
-    //     postgresLayer
-
-    // UserRepo.inMemoryRepo
-
-    // val fullLayer: Layer[Nothing, Logging with UserRepo] = (connectionLayer ++ Console.live) >>> horizontal
-
-    // val provided: ZIO[ZEnv, DBError, Unit] = makeUser.provideCustomLayer(fullLayer)
-
-    provided.exitCode
+    provided //compile error
   }
 
 }

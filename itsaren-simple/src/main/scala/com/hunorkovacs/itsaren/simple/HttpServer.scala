@@ -12,37 +12,36 @@ import org.http4s.server.blaze.BlazeServerBuilder
 
 object HttpServer {
 
-  trait Service {
-    def createServer: ZManaged[ZEnv, Throwable, Server]
+  def createHttp4Server: ZManaged[Runtime[ZEnv], Throwable, Server] = {
+
+      ZManaged.accessManaged { implicit runtime: Runtime[ZEnv] =>
+
+        BlazeServerBuilder[Task](runtime.platform.executor.asEC)
+          .bindHttp(8080, "localhost")
+          .withHttpApp(Routes.helloWorldService)
+          .resource
+          .toManagedZIO
+      }
+
   }
 
-  val http4Server: ZLayer[Any, Nothing, HttpServer] =
-    ZLayer.succeed {
+  def createHttp4Layer: ZLayer[RuntimeLayer, Throwable, Http4ServerLayer] = {
 
-      new Service {
-        private val dsl = Http4sDsl[Task]
-        import dsl._
+    ZLayer.succeed(createHttp4Server)
 
-        private val helloWorldService = HttpRoutes
-          .of[Task] {
-            case GET -> Root / "hello" => Ok("Hello, Joe")
-          }
-          .orNotFound
+  }
 
-        def createServer: ZManaged[ZEnv, Throwable, Server] = {
-          ZManaged.fromEffect(ZIO.runtime[ZEnv]).flatMap { rt =>
-            implicit val implRuntime = rt
+}
 
-            BlazeServerBuilder[Task](implRuntime.platform.executor.asEC)
-              .bindHttp(8080, "localhost")
-              .withHttpApp(helloWorldService)
-              .resource
-              .toManagedZIO
-          }
-        }
-      }
+object Routes {
+
+  val dsl = Http4sDsl[Task]
+  import dsl._
+
+  val helloWorldService = HttpRoutes
+    .of[Task] {
+      case GET -> Root / "hello" => Ok("Hello, Joe")
     }
+    .orNotFound
 
-  def createHttpServer: ZManaged[ZEnv, Throwable, Server] =
-    ZManaged.accessM(s => s.get.)
 }
