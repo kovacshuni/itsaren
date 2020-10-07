@@ -6,11 +6,13 @@ lazy val root =
       name := "itsaren",
       version := "0.0.1-SNAPSHOT",
       scalaVersion := "2.13.3",
+      resolvers += Resolver.sonatypeRepo("snapshots"),
       libraryDependencies ++= Seq(
         "org.http4s"    %% "http4s-blaze-server" % versions.http4s,
         "org.http4s"    %% "http4s-dsl"          % versions.http4s,
         "dev.zio"       %% "zio"                 % "1.0.2",
         "dev.zio"       %% "zio-interop-cats"    % "2.2.0.1",
+        "dev.zio"        % "zio-json_2.13"       % "0.0.0+32-555717e7-SNAPSHOT",
         "org.slf4j"      % "slf4j-api"           % "1.7.30",
         "ch.qos.logback" % "logback-classic"     % "1.2.3"
       )
