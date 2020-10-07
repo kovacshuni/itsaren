@@ -8,7 +8,7 @@ object Dependencies {
 
   val ItsarenSimple = Seq(
     "org.typelevel" %% "cats-effect"         % CatsVersion,
-    "dev.zio"       %% "zio"                 % "1.0.1",
+    "dev.zio"       %% "zio"                 % "1.0.2",
     "dev.zio"       %% "zio-interop-cats"    % "2.1.4.0",
     "io.circe"      %% "circe-core"          % CirceVersion,
     "io.circe"      %% "circe-generic"       % CirceVersion,
