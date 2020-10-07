@@ -7,7 +7,9 @@ import zio.interop.catz.implicits._
 import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeServerBuilder
 
-object HttpServer {
+object Http4Server {
+
+  type Http4Server = Has[Server]
 
   def createHttp4Server: ZManaged[ZEnv, Throwable, Server] =
     ZManaged.runtime[ZEnv].flatMap { implicit runtime: Runtime[ZEnv] =>
@@ -18,7 +20,7 @@ object HttpServer {
         .toManagedZIO
     }
 
-  def createHttp4Layer: ZLayer[ZEnv, Throwable, Has[Server]] =
+  def createHttp4sLayer: ZLayer[ZEnv, Throwable, Http4Server] =
     ZLayer.fromManaged(createHttp4Server)
 
 }
