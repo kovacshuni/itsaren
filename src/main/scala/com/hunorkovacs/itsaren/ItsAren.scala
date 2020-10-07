@@ -1,4 +1,4 @@
-package com.hunorkovacs.itsaren.simple
+package com.hunorkovacs.itsaren
 
 import zio._
 import zio.console.Console
