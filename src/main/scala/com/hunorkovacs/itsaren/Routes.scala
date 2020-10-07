@@ -8,6 +8,9 @@ import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits._
 import com.hunorkovacs.itsaren.crib.Crib
 
+import com.hunorkovacs.itsaren.crib.CribNoId
+import com.hunorkovacs.itsaren.crib.CribNoId._
+
 object Routes {
 
   val dsl = Http4sDsl[Task]
@@ -17,7 +20,24 @@ object Routes {
     .of[Task] {
       case GET -> Root / "cribs" / "af32635c-35c8-4b90-a012-b7576b8ba4c9" =>
         Ok(Crib("af32635c-35c8-4b90-a012-b7576b8ba4c9", "56th street", "0712345678"))
+
+      case req @ POST -> Root / "cribs"                                   =>
+        req.as[Either[DeserializationException, CribNoId]].flatMap {
+          case Left(dEx)       =>
+            BadRequest(dEx.getMessage)
+          case Right(cribNoId) =>
+            for {
+              crib <- create(cribNoId)
+              resp <- Ok(crib)
+            } yield resp
+        }
     }
     .orNotFound
+
+  private def create(cribPost: CribNoId): Task[Crib] =
+    Task {
+      val id = java.util.UUID.randomUUID.toString
+      Crib(id, cribPost.address, cribPost.phone)
+    }
 
 }
