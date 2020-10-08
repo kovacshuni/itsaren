@@ -22,15 +22,14 @@ object Routes {
         Ok(Crib("af32635c-35c8-4b90-a012-b7576b8ba4c9", "56th street", "0712345678"))
 
       case req @ POST -> Root / "cribs"                                   =>
-        req.as[Either[DeserializationException, CribNoId]].flatMap {
-          case Left(dEx)       =>
-            BadRequest(dEx.getMessage)
-          case Right(cribNoId) =>
-            for {
-              crib <- create(cribNoId)
-              resp <- Ok(crib)
-            } yield resp
-        }
+        (for {
+          cribNoId <- req.as[CribNoId]
+          crib     <- create(cribNoId)
+          resp     <- Ok(crib)
+        } yield resp)
+          .catchAll {
+            case dEx: Throwable => BadRequest(dEx.getMessage)
+          }
     }
     .orNotFound
 
