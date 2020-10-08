@@ -1,13 +1,14 @@
 package com.hunorkovacs.itsaren
 
-import zio._
-import zio.interop.catz._
-
 import org.http4s._
 import org.http4s.dsl.Http4sDsl
 import org.http4s.implicits._
-import com.hunorkovacs.itsaren.crib.Crib
+import org.http4s.circe.CirceEntityEncoder._
+import zio._
+import zio.interop.catz._
 
+import com.hunorkovacs.itsaren.crib.Crib
+import com.hunorkovacs.itsaren.crib.Crib._
 import com.hunorkovacs.itsaren.crib.CribNoId
 import com.hunorkovacs.itsaren.crib.CribNoId._
 

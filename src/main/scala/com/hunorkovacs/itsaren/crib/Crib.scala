@@ -1,15 +1,19 @@
 package com.hunorkovacs.itsaren.crib
 
+import io.circe._
+import io.circe.generic.semiauto._
+import org.http4s.EntityDecoder
+import org.http4s.circe._
 import zio.Task
-import zio.json._
-import org.http4s.EntityEncoder
+import zio.interop.catz._
+// import org.http4s.circe.CirceEntityEncoder._
 
 case class Crib(id: String, address: String, phone: String)
 
 object Crib {
-  implicit val cribEncoder: JsonEncoder[Crib] = DeriveJsonEncoder.gen[Crib]
-  implicit val cribDecoder: JsonDecoder[Crib] = DeriveJsonDecoder.gen[Crib]
+  implicit val cribEncoder: Encoder[Crib] = deriveEncoder[Crib]
+  implicit val cribDecoder: Decoder[Crib] = deriveDecoder[Crib]
 
-  implicit val cribEntityEncoder: EntityEncoder[Task, Crib] =
-    EntityEncoder.stringEncoder[Task].contramap(c => c.toJson)
+  implicit val ed: EntityDecoder[Task, Crib] = jsonOf[Task, Crib]
+  // implicit val ee: EntityEncoder[Task, Crib] =
 }
