@@ -7,8 +7,6 @@ import scala.collection.mutable
 
 object CribRepo {
 
-  type CribRepo = Has[CribRepo.Service]
-
   trait Service {
 
     def create(cribPost: CribNoId): Task[Crib]

@@ -8,12 +8,13 @@ import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import crib.CribRoutes
+import crib.CribRepo
 
 object Http4Server {
 
-  type Http4Server = Has[Server]
+  // type Task[A] = RIO[CribRepo, A]
 
-  def createHttp4Server: ZManaged[ZEnv with crib.CribRepo.CribRepo, Throwable, Server] =
+  def createHttp4Server: ZManaged[ZEnv with CribRepo, Throwable, Server] =
     ZManaged.runtime[ZEnv].flatMap { implicit runtime: Runtime[ZEnv] =>
       BlazeServerBuilder[Task](runtime.platform.executor.asEC)
         .bindHttp(8080, "localhost")

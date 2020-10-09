@@ -12,6 +12,8 @@ import Crib._
 
 object CribRoutes {
 
+  type CribTask[A] = ZIO[CribRepo.Service, Throwable, A]
+
   val dsl = Http4sDsl[CribTask]
   import dsl._
 
