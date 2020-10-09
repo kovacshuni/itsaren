@@ -1,9 +1,14 @@
 package com.hunorkovacs.itsaren
 
+import crib.Crib
+import crib.CribRepo
+import CribRepo.CribRepo
+import Http4Server.Http4Server
+import org.http4s.server.Server
 import zio._
 import zio.console.Console
-import org.http4s.server.Server
-import Http4Server.Http4Server
+
+import scala.collection.mutable
 
 object ItsAren extends App {
 
@@ -12,10 +17,16 @@ object ItsAren extends App {
     val program: ZIO[Has[Server] with Console, Nothing, Nothing] =
       ZIO.never
 
+    val initCribs = mutable.Map[String, Crib](
+      ("af32635c-35c8-4b90-a012-b7576b8ba4c9", Crib("af32635c-35c8-4b90-a012-b7576b8ba4c9", "56th street", "0712345678")),
+      ("24495031-ce2e-42a4-b500-4497502c0100", Crib("24495031-ce2e-42a4-b500-4497502c0100", "40th street", "0712345678"))
+    )
+
+    val cribRepoLayer: ZLayer[Any, Nothing, CribRepo]         = CribRepo.inMemCribRepo(initCribs)
     val httpServerLayer: ZLayer[ZEnv, Throwable, Http4Server] = Http4Server.createHttp4sLayer
 
     program
-      .provideLayer(httpServerLayer ++ Console.live)
+      .provideLayer(httpServerLayer ++ cribRepoLayer ++ Console.live)
       .exitCode
   }
 
