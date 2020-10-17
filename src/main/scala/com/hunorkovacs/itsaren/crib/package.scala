@@ -4,6 +4,6 @@ import zio._
 
 package object crib {
 
-  type CribRepo = Has[CribRepo.Service]
+  type HCribRepo = Has[CribRepo.Service]
 
 }

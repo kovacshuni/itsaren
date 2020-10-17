@@ -1,10 +1,6 @@
 package com.hunorkovacs.itsaren
 
-import crib.Crib
-import crib.CribRepo
-import CribRepo.CribRepo
-import Http4Server.Http4Server
-import org.http4s.server.Server
+import crib._
 import zio._
 import zio.console.Console
 
@@ -14,7 +10,7 @@ object ItsAren extends App {
 
   def run(args: List[String]): URIO[ZEnv, ExitCode] = {
 
-    val program: ZIO[Has[Server] with Console, Nothing, Nothing] =
+    val program: ZIO[Http4Server with Console, Nothing, Nothing] =
       ZIO.never
 
     val initCribs = mutable.Map[String, Crib](
@@ -22,11 +18,12 @@ object ItsAren extends App {
       ("24495031-ce2e-42a4-b500-4497502c0100", Crib("24495031-ce2e-42a4-b500-4497502c0100", "40th street", "0712345678"))
     )
 
-    val cribRepoLayer: ZLayer[Any, Nothing, CribRepo]         = CribRepo.inMemCribRepo(initCribs)
-    val httpServerLayer: ZLayer[ZEnv, Throwable, Http4Server] = Http4Server.createHttp4sLayer
+    val cribRepoLayer: ZLayer[Any, Nothing, HCribRepo]                       = CribRepo.inMemCribRepo(initCribs)
+    val httpServerLayer: ZLayer[ZEnv with HCribRepo, Throwable, Http4Server] = Http4Server.createHttp4sLayer
+    val l1: ZLayer[ZEnv, Throwable, Http4Server]                             = cribRepoLayer >>> httpServerLayer
 
     program
-      .provideLayer(httpServerLayer ++ cribRepoLayer ++ Console.live)
+      .provideLayer(l1 ++ Console.live)
       .exitCode
   }
 
