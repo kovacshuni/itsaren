@@ -15,22 +15,21 @@ object Http4Server {
 
   type CribTask[A] = ZIO[HCribRepo, Throwable, A]
 
-  type ZEnvWithCribRepo = ZEnv with Clock with HCribRepo
+  def createHttp4Server: ZManaged[ZEnv with HCribRepo, Throwable, Server] =
+    ZManaged.runtime[ZEnv with HCribRepo].flatMap { _ => // runtime: Runtime[ZEnv] =>
 
-  def createHttp4Server: ZManaged[ZEnvWithCribRepo, Throwable, Server] =
-    ZManaged.runtime[ZEnvWithCribRepo].flatMap { implicit runtime: Runtime[ZEnvWithCribRepo] =>
+      // val rou2 = CribRoutes.cribRoutes
 
+      // BlazeServerBuilder[CribTask](runtime.platform.executor.asEC)
+      //   .bindHttp(8080, "localhost")
+      //   .withHttpApp(rou2)
+      //   .resource
+      //   .toManagedZIO
 
-      val rou2 = CribRoutes.cribRoutes
-
-      BlazeServerBuilder[CribTask](runtime.platform.executor.asEC)
-        .bindHttp(8080, "localhost")
-        .withHttpApp(rou2)
-        .resource
-        .toManagedZIO
+      ???
     }
 
-  def createHttp4sLayer: ZLayer[ZEnvWithCribRepo, Throwable, Http4Server] =
+  def createHttp4sLayer: ZLayer[ZEnv with HCribRepo, Throwable, HServer] =
     ZLayer.fromManaged(createHttp4Server)
 
 }

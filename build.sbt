@@ -16,7 +16,8 @@ lazy val root =
         "io.circe"      %% "circe-generic"       % "0.13.0",
         "org.slf4j"      % "slf4j-api"           % "1.7.30",
         "ch.qos.logback" % "logback-classic"     % "1.2.3"
-      )
+      ),
+      scalacOptions --= Seq("-Xfatal-warnings")
     )
 
 lazy val versions = new {

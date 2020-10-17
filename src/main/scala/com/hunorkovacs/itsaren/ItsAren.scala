@@ -2,15 +2,14 @@ package com.hunorkovacs.itsaren
 
 import crib._
 import zio._
-import zio.console.Console
 
 import scala.collection.mutable
 
 object ItsAren extends App {
 
-  def run(args: List[String]): URIO[ZEnv, ExitCode] = {
+  override def run(args: List[String]): URIO[ZEnv, ExitCode] = {
 
-    val program: ZIO[Http4Server with Console, Nothing, Nothing] =
+    val program: ZIO[HApp, Nothing, Nothing] =
       ZIO.never
 
     val initCribs = mutable.Map[String, Crib](
@@ -18,12 +17,16 @@ object ItsAren extends App {
       ("24495031-ce2e-42a4-b500-4497502c0100", Crib("24495031-ce2e-42a4-b500-4497502c0100", "40th street", "0712345678"))
     )
 
-    val cribRepoLayer: ZLayer[Any, Nothing, HCribRepo]                       = CribRepo.inMemCribRepo(initCribs)
-    val httpServerLayer: ZLayer[ZEnv with HCribRepo, Throwable, Http4Server] = Http4Server.createHttp4sLayer
-    val l1: ZLayer[ZEnv, Throwable, Http4Server]                             = cribRepoLayer >>> httpServerLayer
+    // format: off
+    val cribRepoLayer  : ZLayer[Any, Nothing, HCribRepo]                   = CribRepo.inMemCribRepo(initCribs)
+    val l3             : ZLayer[Any, Throwable, ZEnv with HCribRepo]       = ZEnv.live ++ cribRepoLayer
+    val httpServerLayer: ZLayer[ZEnv with HCribRepo, Throwable, HServer]   = Http4Server.createHttp4sLayer
+    val l2             : ZLayer[ZEnv, Throwable, HServer]                  = l3 >>> httpServerLayer
+    val l1             : ZLayer[ZEnv, Throwable, HApp]                     = l2
+    // format: on
 
     program
-      .provideLayer(l1 ++ Console.live)
+      .provideLayer(l1)
       .exitCode
   }
 
