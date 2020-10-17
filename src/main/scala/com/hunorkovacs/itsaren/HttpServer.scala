@@ -9,27 +9,31 @@ import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import crib.CribRoutes
+import crib.HCribRoutes
 import crib._
 
 object Http4Server {
 
-  type CribTask[A] = ZIO[HCribRepo, Throwable, A]
+  type AppTask[A] = ZIO[HServer with Clock, Throwable, A]
 
-  def createHttp4Server: ZManaged[ZEnv with HCribRepo, Throwable, Server] =
-    ZManaged.runtime[ZEnv with HCribRepo].flatMap { _ => // runtime: Runtime[ZEnv] =>
+  def createHttp4Server: ZManaged[ZEnv with HCribRoutes, Throwable, Server] = {
+    for {
+      routes <- ZManaged.access[HCribRoutes](_.get)
+      server <- ZManaged.runtime[ZEnv].flatMap { runtime: Runtime[ZEnv] =>
+                  // type BuilderTask[A] = ZIO[HServer with Clock, Throwable, A]
 
-      // val rou2 = CribRoutes.cribRoutes
+                  // BlazeServerBuilder[BuilderTask](runtime.platform.executor.asEC)
+                  //   .bindHttp(8080, "localhost")
+                  //   .withHttpApp(rou2)
+                  //   .resource
+                  //   .toManagedZIO
 
-      // BlazeServerBuilder[CribTask](runtime.platform.executor.asEC)
-      //   .bindHttp(8080, "localhost")
-      //   .withHttpApp(rou2)
-      //   .resource
-      //   .toManagedZIO
+                  ???
+                }
+    } yield server
+  }
 
-      ???
-    }
-
-  def createHttp4sLayer: ZLayer[ZEnv with HCribRepo, Throwable, HServer] =
+  def createHttp4sLayer: ZLayer[ZEnv with HCribRoutes, Throwable, HServer] =
     ZLayer.fromManaged(createHttp4Server)
 
 }
