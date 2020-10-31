@@ -15,9 +15,12 @@ lazy val root =
         "org.http4s"    %% "http4s-circe"        % versions.http4s,
         "io.circe"      %% "circe-generic"       % "0.13.0",
         "org.slf4j"      % "slf4j-api"           % "1.7.30",
-        "ch.qos.logback" % "logback-classic"     % "1.2.3"
+        "ch.qos.logback" % "logback-classic"     % "1.2.3",
+
+        compilerPlugin(("org.typelevel" % "kind-projector"      % "0.11.0").cross(CrossVersion.full)),
       ),
-      scalacOptions --= Seq("-Xfatal-warnings")
+      scalacOptions --= Seq("-Xfatal-warnings"),
+      scalacOptions ++= Seq("-language:higherKinds")
     )
 
 lazy val versions = new {
