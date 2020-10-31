@@ -23,7 +23,7 @@ object Http4Server {
   def createHttp4Server: ZManaged[ZEnv with HCribRoutes, Throwable, Server] = {
     for {
       routes <- ZManaged.access[HCribRoutes](_.get)
-      server <- ZManaged.runtime[ZEnv].flatMap { runtime: Runtime[ZEnv] =>
+      server <- ZManaged.runtime[HServer with Clock].flatMap { implicit runtime: Runtime[HServer with Clock] =>
                   type BuilderTask[A] = ZIO[HServer with Clock, Throwable, A]
 
                   BlazeServerBuilder[BuilderTask](runtime.platform.executor.asEC)
