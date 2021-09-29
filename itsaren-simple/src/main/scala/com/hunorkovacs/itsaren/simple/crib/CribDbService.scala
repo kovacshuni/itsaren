@@ -2,7 +2,7 @@ package com.hunorkovacs.itsaren.simple.crib
 
 import cats.effect.IO
 
-trait CribDbService {
+trait CribDbService:
 
   def create(cribPost: CribNoId): IO[Crib]
 
@@ -13,5 +13,3 @@ trait CribDbService {
   def update(id: String, cribPost: CribNoId): IO[Option[Crib]]
 
   def delete(id: String): IO[Option[Crib]]
-
-}

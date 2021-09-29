@@ -2,9 +2,9 @@ import sbt._
 
 object Dependencies {
 
-  private val CatsVersion     = "2.1.4"
-  private val Http4sVersion   = "0.21.7"
-  private val CirceVersion    = "0.12.3"
+  private val CatsVersion     = "3.2.9"
+  private val Http4sVersion   = "0.23.4"
+  private val CirceVersion    = "0.14.1"
 
   val ItsarenSimple = Seq(
     "org.typelevel"     %% "cats-effect"           % CatsVersion,

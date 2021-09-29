@@ -5,6 +5,5 @@ import io.circe.generic.semiauto.deriveEncoder
 
 case class Message(message: String)
 
-object Message {
+object Message:
   implicit val messageEncoder: Encoder[Message] = deriveEncoder
-}

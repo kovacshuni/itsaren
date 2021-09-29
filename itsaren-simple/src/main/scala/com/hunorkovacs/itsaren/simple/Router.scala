@@ -11,7 +11,7 @@ import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.{EntityDecoder, HttpRoutes, Request, Response}
 
-object Router {
+object Router:
 
   def http4sRoutes(cribDbService: CribDbService): Kleisli[IO, Request[IO], Response[IO]] =
     HttpRoutes
@@ -33,14 +33,13 @@ object Router {
           } yield resp
 
         case req @ PUT -> Root / "cribs" / id =>
-          for {
+          for
             cribNoId <- req.as[CribNoId]
             crib     <- cribDbService.update(id, cribNoId)
-            resp     <- crib match {
+            resp     <- crib match
                           case Some(updatedCrib) => Ok(updatedCrib)
                           case None              => NotFound(Message("Crib not found, can't update."))
-                        }
-          } yield resp
+          yield resp
 
         case DELETE -> Root / "cribs" / id    =>
           cribDbService.delete(id).flatMap {
@@ -51,4 +50,3 @@ object Router {
       .orNotFound
 
   implicit val cribNoIdDecoder: EntityDecoder[IO, CribNoId] = jsonOf[IO, CribNoId]
-}

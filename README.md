@@ -2,9 +2,7 @@
 
 Run:
 
-`sbt docker:publishLocal`
-
-`docker run -it -p 8080 itsmycrib:1.0.0-SNAPSHOT`
+`sbt run`
 
 Use:
 

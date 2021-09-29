@@ -4,7 +4,7 @@ import cats.effect.IO
 
 import scala.collection.mutable
 
-object InMemCribDbService extends CribDbService {
+object InMemCribDbService extends CribDbService:
 
   private val cribs = mutable.Map[String, Crib](
     ("af32635c-35c8-4b90-a012-b7576b8ba4c9", Crib("af32635c-35c8-4b90-a012-b7576b8ba4c9", "56th street", "0712345678")),
@@ -31,5 +31,3 @@ object InMemCribDbService extends CribDbService {
   }
 
   override def delete(id: String): IO[Option[Crib]] = IO(cribs.remove(id))
-
-}
