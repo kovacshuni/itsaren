@@ -9,7 +9,9 @@ import org.http4s.server.Server
 import org.http4s.server.blaze.BlazeServerBuilder
 
 import org.http4s.HttpApp
+import org.http4s.server.Router
 import org.http4s.implicits._
+import cats.effect._
 import org.http4s.server.middleware.CORS
 
 import crib.CribRoutes
@@ -18,17 +20,18 @@ import crib._
 
 object Http4Server {
 
-  type AppTask[A] = ZIO[HServer with Clock, Throwable, A]
+  type ServerClockTask[A] = ZIO[HServer with Clock, Throwable, A]
 
   def createHttp4Server: ZManaged[ZEnv with HCribRoutes, Throwable, Server] = {
     for {
       routes <- ZManaged.access[HCribRoutes](_.get)
+      httpApp = Router[ServerClockTask]("/" -> routes).orNotFound
       server <- ZManaged.runtime[HServer with Clock].flatMap { implicit runtime: Runtime[HServer with Clock] =>
-                  type BuilderTask[A] = ZIO[HServer with Clock, Throwable, A]
+                  // type BuilderTask[A] = ZIO[HServer with Clock, Throwable, A]
 
-                  BlazeServerBuilder[BuilderTask](runtime.platform.executor.asEC)
+                  BlazeServerBuilder[ServerClockTask](runtime.platform.executor.asEC)
                     .bindHttp(8080, "localhost")
-                    .withHttpApp(routes)
+                    .withHttpApp(???)
                     .resource
                     .toManagedZIO
 

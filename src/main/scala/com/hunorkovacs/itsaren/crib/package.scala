@@ -1,7 +1,7 @@
 package com.hunorkovacs.itsaren
 
 import zio._
-import org.http4s.HttpApp
+import org.http4s.HttpRoutes
 
 package object crib {
 
@@ -9,6 +9,6 @@ package object crib {
 
   type CribTask[A] = ZIO[HCribRepo, Throwable, A]
 
-  type HCribRoutes = Has[HttpApp[CribTask]]
+  type HCribRoutes = Has[HttpRoutes[CribTask]]
 
 }

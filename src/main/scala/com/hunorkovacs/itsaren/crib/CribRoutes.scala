@@ -15,7 +15,7 @@ object CribRoutes {
   val dsl = Http4sDsl[CribTask]
   import dsl._
 
-  def createCribRoutes: HttpApp[CribTask] = HttpRoutes
+  def createCribRoutes: HttpRoutes[CribTask] = HttpRoutes
     .of[CribTask] {
       case GET -> Root / "cribs" / id   =>
         CribRepo.retrieve(id).flatMap {
@@ -33,7 +33,6 @@ object CribRoutes {
             case dEx: Throwable => BadRequest(dEx.getMessage)
           }
     }
-    .orNotFound
 
   def createCribRepoLayer: ZLayer[HCribRepo, Throwable, HCribRoutes] =
     ZLayer.succeed(createCribRoutes)

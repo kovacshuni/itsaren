@@ -20,7 +20,7 @@ object ItsAren extends App {
     // format: off
     val cribRepoLayer  : ZLayer[Any, Nothing, HCribRepo]                   = CribRepo.inMemCribRepo(initCribs)
     val l3             : ZLayer[Any, Throwable, ZEnv with HCribRepo]       = ZEnv.live ++ cribRepoLayer
-    val httpServerLayer: ZLayer[ZEnv with HCribRepo, Throwable, HServer]   = Http4Server.createHttp4sLayer
+    val httpServerLayer: ZLayer[ZEnv with HCribRepo, Throwable, HServer]   = ??? //Http4Server.createHttp4sLayer
     val l2             : ZLayer[ZEnv, Throwable, HServer]                  = l3 >>> httpServerLayer
     val l1             : ZLayer[ZEnv, Throwable, HApp]                     = l2
     // format: on
