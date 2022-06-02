@@ -2,7 +2,7 @@
 lazy val `itsaren-simple` = (project in file("itsaren-simple"))
   .settings(BuildConfig.commonSettings)
   .settings(
-    Compile / mainClass := Some("com.hunorkovacs.itsaren.simple.ItsAren"),
+    Compile / mainClass := Some("com.hunorkovacs.itsaren.simple.ItsArenApp"),
     libraryDependencies ++= Dependencies.ItsarenSimple
   )
 

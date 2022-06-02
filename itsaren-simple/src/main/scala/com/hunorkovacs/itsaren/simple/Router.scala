@@ -16,23 +16,23 @@ object Router:
   def http4sRoutes(arnDbService: ArnDbService): Kleisli[IO, Request[IO], Response[IO]] =
     HttpRoutes
       .of[IO] {
-        case GET -> Root / "arns"            =>
+        case GET -> Root / "v1" / "arns"            =>
           arnDbService.retrieveAll.flatMap(Ok(_))
 
-        case GET -> Root / "arns" / id       =>
+        case GET -> Root / "v1" / "arns" / id       =>
           arnDbService.retrieve(id).flatMap {
             case None       => NotFound()
             case Some(arn) => Ok(arn)
           }
 
-        case req @ POST -> Root / "arns"     =>
+        case req @ POST -> Root / "v1" / "arns"     =>
           for {
             arnNoId <- req.as[ArnNoId]
             arn     <- arnDbService.create(arnNoId)
             resp     <- Ok(arn)
           } yield resp
 
-        case req @ PUT -> Root / "arns" / id =>
+        case req @ PUT -> Root / "v1" / "arns" / id =>
           for
             arnNoId <- req.as[ArnNoId]
             arn     <- arnDbService.update(id, arnNoId)
@@ -41,7 +41,7 @@ object Router:
                           case None              => NotFound(Message("Arn not found, can't update."))
           yield resp
 
-        case DELETE -> Root / "arns" / id    =>
+        case DELETE -> Root / "v1" / "arns" / id    =>
           arnDbService.delete(id).flatMap {
             case None    => NotFound(Message("Arn not found, can't delete."))
             case Some(_) => NoContent()

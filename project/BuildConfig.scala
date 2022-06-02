@@ -7,7 +7,7 @@ object BuildConfig {
     run / fork := true,
     organization := "com.hunorkovacs",
     version := "1.0.0-SNAPSHOT",
-    scalaVersion := "3.0.2"
+    scalaVersion := "3.1.2"
     // scalacOptions := Seq()
   )
 
