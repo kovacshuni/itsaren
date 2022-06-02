@@ -14,7 +14,8 @@ object Dependencies {
     "org.http4s"    %% "http4s-dsl"          % Http4sVersion,
     "org.http4s"    %% "http4s-blaze-server" % Http4sVersion,
     "org.http4s"    %% "http4s-circe"        % Http4sVersion,
-    "org.slf4j"      % "slf4j-api"           % "1.7.30",
+    // "org.slf4j"      % "slf4j-api"           % "1.7.30",
+    "org.typelevel" %% "log4cats-slf4j"      % "2.3.1",
     "ch.qos.logback" % "logback-classic"     % "1.2.3"
   )
 
