@@ -2,14 +2,14 @@ package com.hunorkovacs.itsaren.simple
 
 import cats.effect.{ExitCode, IO, IOApp}
 import com.comcast.ip4s._
-import com.hunorkovacs.itsaren.simple.arn.InMemArnDbService
+import com.hunorkovacs.itsaren.simple.arn.InMemArnDb
+import com.hunorkovacs.itsaren.simple.http.HttpRouter
 import org.http4s.ember.server._
-import org.http4s.implicits._
-import org.http4s.server.Router
 import org.typelevel.log4cats._
 import org.typelevel.log4cats.slf4j._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import cats.effect.kernel.Resource
 
 object ItsArenApp extends IOApp:
 
@@ -18,23 +18,20 @@ object ItsArenApp extends IOApp:
     implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory[IO]
     val logger: SelfAwareStructuredLogger[IO]     = LoggerFactory[IO].getLogger
 
-    val healthServer = EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"8083")
-      .withHttpApp(HttpRouter.healthRoutes)
-      .build
-
-    val applicationServer = EmberServerBuilder
-      .default[IO]
-      .withHost(ipv4"0.0.0.0")
-      .withPort(port"8080")
-      .withHttpApp(HttpRouter.applicationRoutes(InMemArnDbService))
-      .build
-
     (for
-      _ <- healthServer
-      _ <- applicationServer
+      dbService         <- Resource.eval(InMemArnDb.createSample)
+      healthServer      <- EmberServerBuilder
+                             .default[IO]
+                             .withHost(ipv4"0.0.0.0")
+                             .withPort(port"8083")
+                             .withHttpApp(HttpRouter.healthRoutes)
+                             .build
+      applicationServer <- EmberServerBuilder
+                             .default[IO]
+                             .withHost(ipv4"0.0.0.0")
+                             .withPort(port"8080")
+                             .withHttpApp(HttpRouter.applicationRoutes(dbService))
+                             .build
     yield ())
       .use { _ =>
         for {

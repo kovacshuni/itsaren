@@ -1,9 +1,6 @@
 package com.hunorkovacs.itsaren.simple.arn
 
-import io.circe.Encoder
-import io.circe.generic.semiauto.deriveEncoder
+import io.circe.Codec
+import java.util.UUID
 
-case class Arn(id: String, address: String, phone: String)
-
-object Arn:
-  implicit val arnEncoder: Encoder[Arn] = deriveEncoder
+case class Arn(id: UUID, address: String, phone: String) derives Codec.AsObject
