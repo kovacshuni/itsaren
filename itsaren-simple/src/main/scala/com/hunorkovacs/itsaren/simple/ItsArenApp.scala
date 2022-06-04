@@ -1,15 +1,19 @@
 package com.hunorkovacs.itsaren.simple
 
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.kernel.Resource
 import com.comcast.ip4s._
 import com.hunorkovacs.itsaren.simple.arn.InMemArnDb
 import com.hunorkovacs.itsaren.simple.http.HttpRouter
+import io.circe.syntax._
 import org.http4s.ember.server._
 import org.typelevel.log4cats._
 import org.typelevel.log4cats.slf4j._
-
+import pureconfig._
+import pureconfig.generic.auto._
+import pureconfig.ConfigSource
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
-import cats.effect.kernel.Resource
 
 object ItsArenApp extends IOApp:
 
@@ -19,6 +23,7 @@ object ItsArenApp extends IOApp:
     val logger: SelfAwareStructuredLogger[IO]     = LoggerFactory[IO].getLogger
 
     (for
+      config            <- Resource.eval(IO(ConfigSource.default.loadOrThrow[ItsArenConfig]))
       dbService         <- Resource.eval(InMemArnDb.createSample)
       healthServer      <- EmberServerBuilder
                              .default[IO]
@@ -32,11 +37,16 @@ object ItsArenApp extends IOApp:
                              .withPort(port"8080")
                              .withHttpApp(HttpRouter.applicationRoutes(dbService))
                              .build
-    yield ())
-      .use { _ =>
+    yield config)
+      .use { config =>
         for {
           _ <- logger.info("Server online, accessible on port=8080 Press Ctrl-C (or send SIGINT) to stop")
           _ <- logger.info("""Try: curl -i -XPOST -H"Content-Type:application/json" -d'{"address":"56th street","phone":"0712345678"}' localhost:8080/v1/arns""")
+
+          _ <- logger.info(config.asJson.spaces2)
+
+          // _ <- doStuffHere
+
           _ <- IO.never
         } yield ()
       }
