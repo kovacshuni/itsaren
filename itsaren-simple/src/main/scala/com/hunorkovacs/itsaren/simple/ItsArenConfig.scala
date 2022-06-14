@@ -1,6 +1,8 @@
 package com.hunorkovacs.itsaren.simple
 
-
 import io.circe.Codec
 
-case class ItsArenConfig(someParam: Int) derives Codec.AsObject
+case class ItsArenConfig(
+    healthPort: Int,
+    port: Int)
+    derives Codec.AsObject
