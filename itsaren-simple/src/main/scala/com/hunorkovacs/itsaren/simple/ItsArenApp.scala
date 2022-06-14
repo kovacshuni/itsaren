@@ -5,13 +5,12 @@ import cats.effect.kernel.Resource
 import com.comcast.ip4s._
 import com.hunorkovacs.itsaren.simple.arn.InMemArnDb
 import com.hunorkovacs.itsaren.simple.http.HttpRouter
+import com.typesafe.config.ConfigFactory
+import io.circe.config.parser
 import io.circe.syntax._
 import org.http4s.ember.server._
 import org.typelevel.log4cats._
 import org.typelevel.log4cats.slf4j._
-import pureconfig._
-import pureconfig.generic.auto._
-import pureconfig.ConfigSource
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -23,7 +22,7 @@ object ItsArenApp extends IOApp:
     val logger: SelfAwareStructuredLogger[IO]     = LoggerFactory[IO].getLogger
 
     (for
-      config            <- Resource.eval(IO(ConfigSource.default.loadOrThrow[ItsArenConfig]))
+      config            <- Resource.eval(parser.decodeF[IO, ItsArenConfig](ConfigFactory.load()))
       dbService         <- Resource.eval(InMemArnDb.createSample)
       healthServer      <- EmberServerBuilder
                              .default[IO]

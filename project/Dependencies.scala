@@ -14,7 +14,7 @@ object Dependencies {
     "org.http4s"             %% "http4s-dsl"          % Http4sVersion,
     "org.http4s"             %% "http4s-ember-server" % Http4sVersion,
     "org.http4s"             %% "http4s-circe"        % Http4sVersion,
-    ("com.github.pureconfig" %% "pureconfig"          % "0.17.1").cross(CrossVersion.for3Use2_13),
+    "com.hunorkovacs"        %% "circe-config"        % "0.9.0",
     "org.typelevel"          %% "log4cats-slf4j"      % "2.3.1",
     "ch.qos.logback"          % "logback-classic"     % "1.2.3"
   )
