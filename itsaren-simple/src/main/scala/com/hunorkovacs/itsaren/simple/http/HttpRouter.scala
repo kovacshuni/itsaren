@@ -10,6 +10,7 @@ import org.http4s.dsl.io._
 import org.http4s.implicits._
 import org.http4s.{EntityDecoder, HttpRoutes, Request, Response}
 import java.util.UUID
+import cats.effect.kernel.Ref
 
 object HttpRouter:
 
@@ -49,9 +50,26 @@ object HttpRouter:
       }
       .orNotFound
 
-  def healthRoutes: Kleisli[IO, Request[IO], Response[IO]] =
-    HttpRoutes.of[IO] { case GET -> Root / "health" => Ok(Healthy()) }.orNotFound
+  def healthRoutes(ready: Ref[IO, Boolean]): Kleisli[IO, Request[IO], Response[IO]] =
+    HttpRoutes
+      .of[IO] {
+        case GET -> Root / "health" =>
+          Ok(Healthy())
 
+        case GET -> Root / "is_initialized" =>
+          Ok(Initialized())
+
+        case GET -> Root / "is_ready" =>
+          ready.get.flatMap {
+            case true  => Ok(Ready())
+            case false => NotFound(NotReady())
+          }
+      }
+      .orNotFound
+
+  case class Initialized(message: String = "initialized")
+  case class Ready(message: String = "ready")
+  case class NotReady(message: String = "not ready")
   case class Healthy(message: String = "healthy")
 
   implicit val arnNoIdDecoder: EntityDecoder[IO, ArnNoId] = jsonOf[IO, ArnNoId]
