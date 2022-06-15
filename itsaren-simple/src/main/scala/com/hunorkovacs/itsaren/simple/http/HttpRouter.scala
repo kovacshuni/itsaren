@@ -54,19 +54,19 @@ object HttpRouter:
     HttpRoutes
       .of[IO] {
         case GET -> Root / "health" =>
-          Ok(DiagMessage("healthy"))
+          Ok(HttpMessage("healthy"))
 
         case GET -> Root / "is_initialized" =>
-          Ok(DiagMessage("initialized"))
+          Ok(HttpMessage("initialized"))
 
         case GET -> Root / "is_ready" =>
           ready.get.flatMap {
-            case true  => Ok(DiagMessage("ready"))
-            case false => NotFound(DiagMessage("not ready"))
+            case true  => Ok(HttpMessage("ready"))
+            case false => NotFound(HttpMessage("not ready"))
           }
       }
       .orNotFound
 
-  case class DiagMessage(message: String)
+  case class HttpMessage(message: String)
 
   implicit val arnNoIdDecoder: EntityDecoder[IO, ArnNoId] = jsonOf[IO, ArnNoId]
