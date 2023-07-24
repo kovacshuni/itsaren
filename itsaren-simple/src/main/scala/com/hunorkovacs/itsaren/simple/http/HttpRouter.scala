@@ -11,8 +11,13 @@ import org.http4s.implicits._
 import org.http4s.{EntityDecoder, HttpRoutes, Request, Response}
 import java.util.UUID
 import cats.effect.kernel.Ref
+import org.typelevel.log4cats._
+import org.typelevel.log4cats.slf4j._
 
 object HttpRouter:
+
+  implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory[IO]
+  val logger: SelfAwareStructuredLogger[IO]     = LoggerFactory[IO].getLogger
 
   def applicationRoutes(arnDb: ArnDb): Kleisli[IO, Request[IO], Response[IO]] =
     HttpRoutes
